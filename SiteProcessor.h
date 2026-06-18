@@ -17,6 +17,8 @@ struct ProcessOptions {
     double bufferMeters = 30.0;
     QString downloadDir;          // empty => no download
     int maxTiles = -1;            // -1 => use each product's default
+    bool makePoints = false;      // write a single-point shapefile per site
+    QString pointsDir;            // base dir for point shapefiles (fallback when no downloadDir)
 };
 
 // Walks each site in a CsvTable, resolves the best resolution for each
@@ -46,6 +48,12 @@ private:
     // Download the winning tiles for one product into <dir>/<siteId>/<key>/.
     void downloadOutcome(const ProductType& product, ProductOutcome& outcome,
                          const QString& siteId, QTextStream& log);
+
+    // Write a single-point shapefile for one site. Returns the directory used,
+    // or empty on failure (error logged).
+    QString writePointShapefile(const CsvTable& table, int rowIdx,
+                                const QString& siteId, double lon, double lat,
+                                int latC, int lonC, QTextStream& log);
 
     static QString sanitize(const QString& s);
     static QString fileNameFromUrl(const QString& url);

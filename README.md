@@ -34,6 +34,11 @@ Options:
   --download DIR    Download data into DIR/<id>/<product>/.
   --max-tiles N     Cap files per product per site (0 = no limit;
                     default is per-product: 8 for DEM, 4 for hydro).
+  --make-points     Write a single-point shapefile per site (.shp/.shx/.dbf/
+                    .prj/.cpg) at the site's coordinate, with all other CSV
+                    columns carried in as attributes.
+  --points-dir DIR  Base dir for point shapefiles (default: the --download dir
+                    if set, else the output CSV's folder).
 
 Input needs a header row; coordinates are decimal degrees (WGS84).
 
@@ -48,6 +53,10 @@ Check both DEM and hydrography:
 Check and download both into per-site folders:
     ./demcheck WS3_Site_Coordinates.csv --id-col "Project No." \
         --products all --download ./GIS --buffer 500
+
+Just create point shapefiles (no data download):
+    ./demcheck WS3_Site_Coordinates.csv --id-col "Project No." \
+        --make-points --points-dir ./points
 
 ## Output
 
@@ -66,7 +75,9 @@ API error: no tiers reachable | missing/invalid coordinate
         dem/      <GeoTIFF tiles>
         hydro/    <zipped Shapefile package>
       AZ12-301/
-        ...
+        dem/
+        hydro/
+        point/    <single-point AZ12-301.shp + sidecars>
 
 Files stream to <name>.part then rename on success; existing files are skipped
 on re-run (compared by size), so interrupted runs resume cheaply.
@@ -80,6 +91,7 @@ main.cpp only parses arguments and wires objects. Logic lives in src/:
   TnmClient.*      all HTTP: querying a dataset, downloading a file
   CsvTable.*       CSV parse / column detection / write
   SiteProcessor.*  orchestration across sites and products
+  ShapefileWriter.* writes a minimal single-point .shp/.shx/.dbf/.prj/.cpg
 
 Adding a new USGS product (e.g. WBD watershed boundaries) = one new ProductType
 subclass and one line in main(); nothing else changes.

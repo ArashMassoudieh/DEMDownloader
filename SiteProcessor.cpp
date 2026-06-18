@@ -1,5 +1,6 @@
 #include "SiteProcessor.h"
 #include "CsvTable.h"
+#include "ShapefileWriter.h"
 #include <QtCore/QFile>
 #include <QtCore/QDir>
 #include <QtCore/QFileInfo>
@@ -98,6 +99,45 @@ void SiteProcessor::downloadOutcome(const ProductType& product,
     log << "      -> " << outcome.downloaded << " file(s) in " << prodDir << "\n"; log.flush();
 }
 
+QString SiteProcessor::writePointShapefile(const CsvTable& table, int rowIdx,
+                                           const QString& siteId,
+                                           double lon, double lat,
+                                           int latC, int lonC, QTextStream& log) {
+    // Base directory: prefer the download dir (keeps everything together under
+    // the site), else the dedicated points dir.
+    QString base = !m_opts.downloadDir.isEmpty() ? m_opts.downloadDir : m_opts.pointsDir;
+    if (base.isEmpty()) base = ".";
+    const QString siteDir = QDir(base).filePath(sanitize(siteId));
+    const QString ptDir = QDir(siteDir).filePath("point");
+    QDir().mkpath(ptDir);
+
+    // Attributes: carry every CSV column except the raw lat/lon (already the
+    // geometry). dBASE field names are capped at 10 chars; de-duplicate.
+    QList<ShapefileWriter::Attr> attrs;
+    QStringList usedNames;
+    const QStringList& hdr = table.header();
+    for (int c = 0; c < hdr.size(); ++c) {
+        if (c == latC || c == lonC) continue;
+        QString name = sanitize(hdr.at(c)).left(10).trimmed();
+        name.replace(' ', '_');
+        if (name.isEmpty()) name = QString("F%1").arg(c);
+        QString unique = name; int n = 1;
+        while (usedNames.contains(unique, Qt::CaseInsensitive))
+            unique = name.left(8) + QString("_%1").arg(n++);
+        usedNames << unique;
+        attrs << ShapefileWriter::Attr{ unique, table.field(rowIdx, c) };
+    }
+
+    const QString basePath = QDir(ptDir).filePath(sanitize(siteId));
+    QString err;
+    if (!ShapefileWriter::writePoint(basePath, lon, lat, attrs, &err)) {
+        log << "   " << siteId << " [point]: " << err << "\n"; log.flush();
+        return QString();
+    }
+    log << "   " << siteId << " [point]: wrote " << basePath << ".shp\n"; log.flush();
+    return ptDir;
+}
+
 bool SiteProcessor::run(const CsvTable& table, const QString& outPath,
                         QTextStream& log, QString* err) {
     const int latC = table.findColumn(
@@ -135,6 +175,7 @@ bool SiteProcessor::run(const CsvTable& table, const QString& outPath,
                   << k + "_count" << k + "_date" << k + "_url" << k + "_status";
         if (doDownload) outHeader << k + "_downloaded" << k + "_dir";
     }
+    if (m_opts.makePoints) outHeader << "point_dir";
     QStringList he; for (const QString& h : outHeader) he << CsvTable::escape(h);
     os << he.join(",") << "\n"; os.flush();
 
@@ -160,6 +201,15 @@ bool SiteProcessor::run(const CsvTable& table, const QString& outPath,
             row << oc.bestResolution << oc.bestDataset << QString::number(oc.tileCount)
                 << oc.date << oc.firstUrl << oc.status;
             if (doDownload) row << QString::number(oc.downloaded) << oc.downloadDir;
+        }
+
+        if (m_opts.makePoints) {
+            QString ptDir;
+            if (okLat && okLon)
+                ptDir = writePointShapefile(table, i, siteId, lon, lat, latC, lonC, log);
+            else
+                log << "   " << siteId << " [point]: skipped (invalid coordinate)\n";
+            row << ptDir;
         }
         QStringList re; for (const QString& f : row) re << CsvTable::escape(f);
         os << re.join(",") << "\n"; os.flush();

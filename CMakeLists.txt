@@ -18,6 +18,7 @@ add_executable(demcheck
     src/TnmClient.cpp
     src/CsvTable.cpp
     src/SiteProcessor.cpp
+    src/ShapefileWriter.cpp
 )
 target_include_directories(demcheck PRIVATE src)
 target_link_libraries(demcheck PRIVATE ${QT_LIBS})

@@ -49,8 +49,11 @@ int main(int argc, char* argv[]) {
     QCommandLineOption dlOpt("download", "Download data into this directory.", "dir");
     QCommandLineOption maxOpt("max-tiles", "Max files per product per site (0 = no limit; default per-product).", "n", "-1");
     QCommandLineOption prodOpt("products", "Comma list: dem,hydro,all (default dem).", "list", "dem");
+    QCommandLineOption ptOpt("make-points", "Write a single-point shapefile per site.");
+    QCommandLineOption ptDirOpt("points-dir", "Base dir for point shapefiles (default: download dir, else output folder).", "dir");
     p.addOption(latOpt); p.addOption(lonOpt); p.addOption(idOpt);
     p.addOption(bufOpt); p.addOption(dlOpt); p.addOption(maxOpt); p.addOption(prodOpt);
+    p.addOption(ptOpt); p.addOption(ptDirOpt);
     p.process(app);
 
     const QStringList args = p.positionalArguments();
@@ -79,6 +82,8 @@ int main(int argc, char* argv[]) {
     opts.bufferMeters   = p.value(bufOpt).toDouble();
     opts.downloadDir    = p.value(dlOpt);
     opts.maxTiles       = p.value(maxOpt).toInt();
+    opts.makePoints     = p.isSet(ptOpt);
+    opts.pointsDir      = p.value(ptDirOpt);
 
     CsvTable table;
     QString err;

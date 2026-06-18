@@ -9,11 +9,13 @@ INCLUDEPATH += src
 SOURCES += main.cpp \
     TnmClient.cpp \
     CsvTable.cpp \
-    SiteProcessor.cpp
+    SiteProcessor.cpp \
+    ShapefileWriter.cpp
 
 HEADERS += \
     Types.h \
     ProductType.h \
     TnmClient.h \
     CsvTable.h \
-    SiteProcessor.h
+    SiteProcessor.h \
+    ShapefileWriter.h
