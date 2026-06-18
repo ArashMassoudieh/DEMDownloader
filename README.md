@@ -1,87 +1,100 @@
-# demcheck — Highest-resolution USGS 3DEP DEM lookup + downloader
+# demcheck — USGS highest-resolution DEM + hydrography lookup/downloader
 
-Reads a CSV of coordinates and, for each point, queries the USGS
-**TNMAccess API** (`tnmaccess.nationalmap.gov/api/v1/products`) from finest
-to coarsest 3DEP resolution, reporting the best available DEM. Optionally
-downloads the matching tiles into a per-project folder.
+Reads a CSV of coordinates and, for each point, queries the USGS **TNMAccess
+API** for the highest-resolution data available, then optionally downloads it
+into a per-site, per-product folder.
 
-Resolution tiers checked, in order:
-1 meter -> 1/9 arc-second -> 1/3 arc-second -> 1 arc-second.
+Two product types:
+  - **elevation** (3DEP DEM): 1 m -> 1/9 -> 1/3 -> 1 arc-second, GeoTIFF tiles.
+  - **hydrography** (flowlines): NHDPlus HR -> NHD Best Resolution, as zipped
+    Shapefile packages (delivered by watershed unit, so usually one per point).
+
+Note: USGS retired the NHD on 1 Oct 2023 (still downloadable, no longer
+maintained); NHDPlus HR is the current highest-resolution flowline product and
+is tried first. The 3D Hydrography Program (3DHP) is the long-term successor.
 
 ## Build
 
-Qt5 or Qt6 (Core + Network). Two options:
+Qt5 or Qt6 (Core + Network).
 
-**qmake**
-    qmake demcheck.pro
-    make
-
-**cmake**
-    cmake -B build
-    cmake --build build
+    qmake demcheck.pro && make
+    # or
+    cmake -B build && cmake --build build
 
 ## Usage
 
     ./demcheck input.csv [output.csv] [options]
 
 Options:
+  --products LIST   dem, hydro, or all (comma-separated). Default: dem
   --lat-col NAME    Latitude column (default: auto-detect lat/latitude/...)
-  --lon-col NAME    Longitude column (default: auto-detect lon/lng/longitude/...)
-  --id-col NAME     Identifier column; also names the download subfolder.
+  --lon-col NAME    Longitude column (default: auto-detect lon/lng/...)
+  --id-col NAME     Identifier column; also names download subfolders.
   --buffer METERS   Half-width of the query box around each point (default 30).
-  --download DIR    Download matching tiles into DIR/<id>/ (one folder/project).
-  --max-tiles N     Cap tiles downloaded per site (default 8; 0 = no limit).
+  --download DIR    Download data into DIR/<id>/<product>/.
+  --max-tiles N     Cap files per product per site (0 = no limit;
+                    default is per-product: 8 for DEM, 4 for hydro).
 
 Input needs a header row; coordinates are decimal degrees (WGS84).
-Auto-detected column names include those exported from the WS3 register
-("Centroid Lat", "Centroid Lon", "Site Lat", "Site Lon").
 
 ## Examples
 
-Check only (no download):
+Check DEM only:
     ./demcheck WS3_Site_Coordinates.csv --id-col "Project No."
 
-Check and download into ./DEMs/<Project No.>/ :
-    ./demcheck WS3_Site_Coordinates.csv --id-col "Project No." --download ./DEMs
+Check both DEM and hydrography:
+    ./demcheck WS3_Site_Coordinates.csv --id-col "Project No." --products all
 
-Wider coverage check around community centroids, more tiles:
+Check and download both into per-site folders:
     ./demcheck WS3_Site_Coordinates.csv --id-col "Project No." \
-        --download ./DEMs --buffer 3000 --max-tiles 0
+        --products all --download ./GIS --buffer 500
 
 ## Output
 
-Input columns, plus:
-  best_resolution, best_dataset, tile_count, best_dem_date,
-  best_download_url, query_status
-And when --download is used:
-  tiles_downloaded, download_dir
+Input columns, plus a block per selected product, prefixed by product key
+(dem_ / hydro_):
+  <p>_best_resolution, <p>_best_dataset, <p>_count, <p>_date,
+  <p>_url, <p>_status   (+ <p>_downloaded, <p>_dir when --download is used)
 
-`query_status` values:
-  ok                              best_resolution is valid
-  no coverage                     all tiers answered, none had data
-  incomplete: some tiers errored  a finer DEM may exist but a query failed
-  API error: no tiers reachable   network/endpoint problem
-  missing/invalid coordinate      row had no usable lat/lon
+`*_status` values: ok | no coverage | incomplete: some tiers errored |
+API error: no tiers reachable | missing/invalid coordinate
 
-## Download behavior
+## Download layout
 
-- One subfolder per site, named from --id-col (e.g. DEMs/AZ12-301/).
-- Streams each tile to <name>.part, then renames on success, so an
-  interrupted download is never mistaken for a complete file.
-- Skips files that already exist at the expected size -> re-runs are cheap
-  and resume where they left off.
-- Follows HTTP redirects (USGS download links redirect to a CDN).
+    DIR/
+      AZ12-100/
+        dem/      <GeoTIFF tiles>
+        hydro/    <zipped Shapefile package>
+      AZ12-301/
+        ...
+
+Files stream to <name>.part then rename on success; existing files are skipped
+on re-run (compared by size), so interrupted runs resume cheaply.
+
+## Code structure (object-oriented)
+
+main.cpp only parses arguments and wires objects. Logic lives in src/:
+  Types.h          plain data structs (Tier, Tile, QueryResult, ProductOutcome)
+  ProductType.h    abstract product category + ElevationProduct /
+                   HydrographyProduct subclasses (tiers, formats, defaults)
+  TnmClient.*      all HTTP: querying a dataset, downloading a file
+  CsvTable.*       CSV parse / column detection / write
+  SiteProcessor.*  orchestration across sites and products
+
+Adding a new USGS product (e.g. WBD watershed boundaries) = one new ProductType
+subclass and one line in main(); nothing else changes.
 
 ## Cautions
 
-- 1 m DEM tiles are large (often 100-400 MB each). A wide --buffer over a
-  1 m coverage area can match many tiles; --max-tiles caps the count.
+- 1 m DEM tiles are large (100-400 MB each); a wide --buffer can match many.
+  --max-tiles caps the count per product.
+- Hydrography packages are per-watershed and can be large; the same package
+  often covers several nearby sites (you may download duplicates across sites).
 - Community-centroid coordinates may sit some distance from the actual site;
-  a tile found at the centroid is not proof it covers the subdivision.
-  Use a larger --buffer to confirm footprint coverage.
+  a hit at the centroid is not proof of coverage at the subdivision.
 
-## Note on dataset names
+## Dataset name strings
 
-If USGS renames a 3DEP dataset, the only thing to edit is the `RESOLUTIONS`
-table at the top of `main.cpp`. Run one point first and check the JSON if a
-tier unexpectedly returns nothing.
+If USGS renames a dataset, edit the tier tables in src/ProductType.h
+(ElevationProduct::m_tiers, HydrographyProduct::m_tiers). Run one point and
+check the JSON if a tier unexpectedly returns nothing.
