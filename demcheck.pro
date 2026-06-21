@@ -7,12 +7,14 @@ TARGET = demcheck
 INCLUDEPATH += src
 
 SOURCES += main.cpp \
+    TigerClient.cpp \
     TnmClient.cpp \
     CsvTable.cpp \
     SiteProcessor.cpp \
     ShapefileWriter.cpp
 
 HEADERS += \
+    TigerClient.h \
     Types.h \
     ProductType.h \
     TnmClient.h \

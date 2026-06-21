@@ -1,6 +1,8 @@
 #include "SiteProcessor.h"
 #include "CsvTable.h"
 #include "ShapefileWriter.h"
+#include "TigerClient.h"
+#include <QtCore/QDir>
 #include <QtCore/QFile>
 #include <QtCore/QDir>
 #include <QtCore/QFileInfo>
@@ -9,9 +11,11 @@
 #include <QtCore/QRegularExpression>
 
 SiteProcessor::SiteProcessor(TnmClient& client,
+                             TigerClient& tiger,
                              QList<std::shared_ptr<ProductType>> products,
                              ProcessOptions opts)
-    : m_client(client), m_products(std::move(products)), m_opts(std::move(opts)) {}
+    : m_client(client), m_tiger(tiger),
+      m_products(std::move(products)), m_opts(std::move(opts)) {}
 
 QString SiteProcessor::sanitize(const QString& s) {
     QString r = s.trimmed();
@@ -138,6 +142,53 @@ QString SiteProcessor::writePointShapefile(const CsvTable& table, int rowIdx,
     return ptDir;
 }
 
+
+ProductOutcome SiteProcessor::resolveAndDownloadRoads(const ProductType& product,
+                                                      double lat, double lon,
+                                                      const QString& siteId,
+                                                      QTextStream& log) {
+    ProductOutcome out;
+    out.bestDataset = "Census TIGER/Line All Roads";
+
+    // 1) geocode the point to a county FIPS
+    QString countyName, gerr;
+    const QString fips = m_tiger.countyFipsForPoint(lat, lon, &countyName, &gerr);
+    if (fips.isEmpty()) {
+        out.status = "geocode failed: " + gerr;
+        log << "   " << siteId << " [" << product.key() << "]: " << out.status
+            << "\n"; log.flush();
+        return out;
+    }
+    out.bestResolution = countyName.isEmpty() ? fips : countyName;
+    out.firstUrl = m_tiger.roadsUrlForFips(fips);
+    out.tileCount = 1;
+    out.status = "ok";
+    log << "   " << siteId << " [" << product.key() << "]: county " << fips
+        << (countyName.isEmpty() ? QString() : " (" + countyName + ")")
+        << "\n"; log.flush();
+
+    // 2) download the county roads zip (if downloading is enabled)
+    if (m_opts.downloadDir.isEmpty())
+        return out;
+
+    const QString siteDir = QDir(m_opts.downloadDir).filePath(sanitize(siteId));
+    const QString prodDir = QDir(siteDir).filePath(product.key());
+    QDir().mkpath(prodDir);
+    out.downloadDir = prodDir;
+
+    const QString fname = fileNameFromUrl(out.firstUrl); // tl_YYYY_FIPS_roads.zip
+    const QString dest  = QDir(prodDir).filePath(fname);
+    log << "      downloading " << fname << "\n"; log.flush();
+    if (m_tiger.download(out.firstUrl, dest, -1, &log)) {
+        out.downloaded = 1;
+        log << "      -> 1 file in " << prodDir << "\n"; log.flush();
+    } else {
+        // county file may genuinely not exist (rare); report but don't abort
+        out.status = "download failed (county file missing?)";
+    }
+    return out;
+}
+
 bool SiteProcessor::run(const CsvTable& table, const QString& outPath,
                         QTextStream& log, QString* err) {
     const int latC = table.findColumn(
@@ -194,6 +245,8 @@ bool SiteProcessor::run(const CsvTable& table, const QString& outPath,
             if (!okLat || !okLon) {
                 oc.status = "missing/invalid coordinate";
                 log << "   " << siteId << " [" << p->key() << "]: " << oc.status << "\n"; log.flush();
+            } else if (p->isCountyBased()) {
+                oc = resolveAndDownloadRoads(*p, lat, lon, siteId, log);
             } else {
                 oc = resolveProduct(*p, lat, lon, siteId, log);
                 downloadOutcome(*p, oc, siteId, log);

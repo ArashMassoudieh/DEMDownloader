@@ -32,3 +32,17 @@
 *.app
 
 build/Desktop_Qt_6_8_3-Debug/
+
+build/Desktop_Qt_6_8_2-Debug/.qtc_clangd/.cache/clangd/index/
+
+build/Desktop_Qt_6_8_2-Debug/.qtc_clangd/
+
+build/Desktop_Qt_6_8_2-Debug/
+
+build/Desktop_Qt_6_8_2-Release/.qtc_clangd/.cache/clangd/index/
+
+build/Desktop_Qt_6_8_2-Release/.qtc_clangd/
+
+*.zip
+
+build/Desktop_Qt_6_8_2-Release/

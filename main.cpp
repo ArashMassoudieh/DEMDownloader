@@ -2,16 +2,24 @@
 // available at each coordinate in a CSV, and optionally download it.
 //
 // Supports multiple product types:
-//   elevation  (3DEP DEM)           — 1 m / 1-9 / 1-3 / 1 arc-second GeoTIFF
+//   elevation   (3DEP DEM)          — 1 m / 1-9 / 1-3 / 1 arc-second GeoTIFF
 //   hydrography (NHDPlus HR / NHD)   — flowlines as zipped Shapefile packages
+//   roads       (Census TIGER/Line)  — county "All Roads" Shapefile packages
 //
 // For each site and each selected product, it walks resolution tiers finest
 // to coarsest, stops at the first with coverage, records the result, and (with
 // --download) saves the files into <dir>/<site>/<product>/.
 //
+// Roads are different: the USGS National Transportation Dataset is unusable
+// through TNMAccess (its product query errors server-side), so roads come from
+// Census TIGER/Line, fetched PER COUNTY. RoadsProduct::isCountyBased() returns
+// true and SiteProcessor routes it to TigerClient (geocode -> county FIPS ->
+// download tl_<year>_<FIPS>_roads.zip) instead of TnmClient.
+//
 // Design: main() only parses arguments and wires objects. The work lives in
 //   ProductType   — describes a product's tiers and formats (one subclass each)
-//   TnmClient     — all HTTP (querying and downloading)
+//   TnmClient     — all TNMAccess HTTP (querying and downloading)
+//   TigerClient   — Census geocode + TIGER/Line roads download (county-based)
 //   CsvTable      — CSV read / column detection / write
 //   SiteProcessor — orchestration across sites and products
 //
@@ -25,18 +33,20 @@
 #include "Types.h"
 #include "ProductType.h"
 #include "TnmClient.h"
+#include "TigerClient.h"
 #include "CsvTable.h"
 #include "SiteProcessor.h"
 
 int main(int argc, char* argv[]) {
     QCoreApplication app(argc, argv);
     QCoreApplication::setApplicationName("demcheck");
-    QCoreApplication::setApplicationVersion("2.0");
+    QCoreApplication::setApplicationVersion("2.1");
 
     QCommandLineParser p;
     p.setApplicationDescription(
-        "Find (and optionally download) the highest-resolution USGS 3DEP DEM\n"
-        "and/or NHD hydrography flowlines at each coordinate in a CSV.");
+        "Find (and optionally download) the highest-resolution USGS 3DEP DEM,\n"
+        "NHD hydrography flowlines, and/or Census TIGER/Line roads at each\n"
+        "coordinate in a CSV.");
     p.addHelpOption();
     p.addVersionOption();
     p.addPositionalArgument("input", "Input CSV (with header row).");
@@ -48,11 +58,13 @@ int main(int argc, char* argv[]) {
     QCommandLineOption bufOpt("buffer", "Half-width of query box in meters (default 30).", "meters", "30");
     QCommandLineOption dlOpt("download", "Download data into this directory.", "dir");
     QCommandLineOption maxOpt("max-tiles", "Max files per product per site (0 = no limit; default per-product).", "n", "-1");
-    QCommandLineOption prodOpt("products", "Comma list: dem,hydro,all (default dem).", "list", "dem");
+    QCommandLineOption prodOpt("products", "Comma list: dem,demlr,hydro,roads,all (default dem).", "list", "dem");
+    QCommandLineOption yearOpt("tiger-year", "Census TIGER/Line vintage year for roads (default 2025).", "year", "2025");
     QCommandLineOption ptOpt("make-points", "Write a single-point shapefile per site.");
     QCommandLineOption ptDirOpt("points-dir", "Base dir for point shapefiles (default: download dir, else output folder).", "dir");
     p.addOption(latOpt); p.addOption(lonOpt); p.addOption(idOpt);
     p.addOption(bufOpt); p.addOption(dlOpt); p.addOption(maxOpt); p.addOption(prodOpt);
+    p.addOption(yearOpt);
     p.addOption(ptOpt); p.addOption(ptDirOpt);
     p.process(app);
 
@@ -61,19 +73,29 @@ int main(int argc, char* argv[]) {
 
     const QString inPath = args.at(0);
     const QString outPath = args.size() > 1 ? args.at(1)
-        : (inPath.endsWith(".csv", Qt::CaseInsensitive)
-            ? inPath.left(inPath.size() - 4) + "_dem.csv" : inPath + "_dem.csv");
+                                            : (inPath.endsWith(".csv", Qt::CaseInsensitive)
+                                                   ? inPath.left(inPath.size() - 4) + "_dem.csv" : inPath + "_dem.csv");
 
     // Select product types.
     QList<std::shared_ptr<ProductType>> products;
     const QStringList sel = p.value(prodOpt).toLower().split(',', Qt::SkipEmptyParts);
     const bool all = sel.contains("all");
-    if (all || sel.contains("dem"))   products << std::make_shared<ElevationProduct>();
-    if (all || sel.contains("hydro")) products << std::make_shared<HydrographyProduct>();
+    if (all || sel.contains("demhr") || sel.contains("dem"))
+        products << std::make_shared<ElevationProduct>();
+    if (all || sel.contains("demlr"))
+        products << std::make_shared<ElevationLowResProduct>();
+    if (all || sel.contains("hydro"))
+        products << std::make_shared<HydrographyProduct>();
+    if (all || sel.contains("roads"))
+        products << std::make_shared<RoadsProduct>();
+
     if (products.isEmpty()) {
-        QTextStream(stderr) << "No valid products selected. Use --products dem,hydro,all.\n";
+        QTextStream(stderr) << "No valid products selected. Use --products dem,demlr,hydro,roads,all.\n";
         return 2;
     }
+
+    // TIGER/Line vintage for roads (defaults to 2025 if unset or invalid).
+    const int tigerYear = p.value(yearOpt).toInt() > 0 ? p.value(yearOpt).toInt() : 2025;
 
     ProcessOptions opts;
     opts.latColOverride = p.value(latOpt);
@@ -93,7 +115,8 @@ int main(int argc, char* argv[]) {
     }
 
     TnmClient client;
-    SiteProcessor processor(client, products, opts);
+    TigerClient tiger(tigerYear);
+    SiteProcessor processor(client, tiger, products, opts);
     QTextStream log(stdout);
     if (!processor.run(table, outPath, log, &err)) {
         QTextStream(stderr) << err << "\n";

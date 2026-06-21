@@ -2,6 +2,7 @@
 #include "Types.h"
 #include "ProductType.h"
 #include "TnmClient.h"
+#include "TigerClient.h"
 #include <QString>
 #include <QList>
 #include <memory>
@@ -27,6 +28,7 @@ struct ProcessOptions {
 class SiteProcessor {
 public:
     SiteProcessor(TnmClient& client,
+                  TigerClient& tiger,
                   QList<std::shared_ptr<ProductType>> products,
                   ProcessOptions opts);
 
@@ -36,6 +38,7 @@ public:
 
 private:
     TnmClient& m_client;
+    TigerClient& m_tiger;
     QList<std::shared_ptr<ProductType>> m_products;
     ProcessOptions m_opts;
 
@@ -44,6 +47,14 @@ private:
                                   double lat, double lon,
                                   const QString& siteId,
                                   QTextStream& log);
+
+    // County-based products (roads) resolve + download via TIGER/Line in
+    // one step (geocode -> county FIPS -> download). Returns the outcome
+    // with status/url/downloaded filled in.
+    ProductOutcome resolveAndDownloadRoads(const ProductType& product,
+                                           double lat, double lon,
+                                           const QString& siteId,
+                                           QTextStream& log);
 
     // Download the winning tiles for one product into <dir>/<siteId>/<key>/.
     void downloadOutcome(const ProductType& product, ProductOutcome& outcome,
