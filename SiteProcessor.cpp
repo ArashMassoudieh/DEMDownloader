@@ -2,6 +2,7 @@
 #include "CsvTable.h"
 #include "ShapefileWriter.h"
 #include "TigerClient.h"
+#include "MrlcClient.h"
 #include <QtCore/QDir>
 #include <QtCore/QFile>
 #include <QtCore/QDir>
@@ -12,9 +13,10 @@
 
 SiteProcessor::SiteProcessor(TnmClient& client,
                              TigerClient& tiger,
+                             MrlcClient& mrlc,
                              QList<std::shared_ptr<ProductType>> products,
                              ProcessOptions opts)
-    : m_client(client), m_tiger(tiger),
+    : m_client(client), m_tiger(tiger), m_mrlc(mrlc),
       m_products(std::move(products)), m_opts(std::move(opts)) {}
 
 QString SiteProcessor::sanitize(const QString& s) {
@@ -189,6 +191,41 @@ ProductOutcome SiteProcessor::resolveAndDownloadRoads(const ProductType& product
     return out;
 }
 
+ProductOutcome SiteProcessor::resolveAndDownloadLandCover(const ProductType& product,
+                                                         double lat, double lon,
+                                                         const QString& siteId,
+                                                         QTextStream& log) {
+    ProductOutcome out;
+    out.bestDataset = QString("NLCD Annual Land Cover %1 (MRLC WCS)").arg(m_mrlc.year());
+    out.bestResolution = "30 m";
+    out.tileCount = 1;
+    out.firstUrl = m_mrlc.coverageUrlForBbox(lat, lon, m_opts.bufferMeters);
+    out.status = "ok";
+    out.date = QString::number(m_mrlc.year());
+    log << "   " << siteId << " [" << product.key() << "]: NLCD "
+        << m_mrlc.year() << " (30 m), bbox subset\n"; log.flush();
+
+    if (m_opts.downloadDir.isEmpty())
+        return out;
+
+    const QString siteDir = QDir(m_opts.downloadDir).filePath(sanitize(siteId));
+    const QString prodDir = QDir(siteDir).filePath(product.key());
+    QDir().mkpath(prodDir);
+    out.downloadDir = prodDir;
+
+    const QString fname = QString("nlcd_%1_%2.tif")
+                              .arg(m_mrlc.year()).arg(sanitize(siteId));
+    const QString dest  = QDir(prodDir).filePath(fname);
+    log << "      downloading " << fname << "\n"; log.flush();
+    if (m_mrlc.download(out.firstUrl, dest, &log)) {
+        out.downloaded = 1;
+        log << "      -> 1 file in " << prodDir << "\n"; log.flush();
+    } else {
+        out.status = "download failed (check coverage id / axis labels / year)";
+    }
+    return out;
+}
+
 bool SiteProcessor::run(const CsvTable& table, const QString& outPath,
                         QTextStream& log, QString* err) {
     const int latC = table.findColumn(
@@ -245,8 +282,10 @@ bool SiteProcessor::run(const CsvTable& table, const QString& outPath,
             if (!okLat || !okLon) {
                 oc.status = "missing/invalid coordinate";
                 log << "   " << siteId << " [" << p->key() << "]: " << oc.status << "\n"; log.flush();
-            } else if (p->isCountyBased()) {
+            } else if (p->fetchVia() == FetchVia::County) {
                 oc = resolveAndDownloadRoads(*p, lat, lon, siteId, log);
+            } else if (p->fetchVia() == FetchVia::BboxRaster) {
+                oc = resolveAndDownloadLandCover(*p, lat, lon, siteId, log);
             } else {
                 oc = resolveProduct(*p, lat, lon, siteId, log);
                 downloadOutcome(*p, oc, siteId, log);

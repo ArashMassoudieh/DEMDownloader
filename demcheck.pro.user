@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE QtCreatorProject>
-<!-- Written by QtCreator 17.0.1, 2026-06-21T07:57:40. -->
+<!-- Written by QtCreator 17.0.1, 2026-06-21T09:21:41. -->
 <qtcreator>
  <data>
   <variable>EnvironmentId</variable>
@@ -241,7 +241,7 @@
      <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">Qt4ProjectManager.Qt4RunConfiguration:</value>
      <value type="QString" key="ProjectExplorer.RunConfiguration.BuildKey">/home/arash/Projects/DEMDownloader/demcheck.pro</value>
      <value type="bool" key="ProjectExplorer.RunConfiguration.Customized">true</value>
-     <value type="QString" key="RunConfiguration.Arguments">/home/arash/Dropbox/Chloeta/NHA/WS3_Site_Coordinates.csv /home/arash/Dropbox/Chloeta/NHA/out.csv --id-col &quot;Project No.&quot; --products roads --download ./data --buffer 5000</value>
+     <value type="QString" key="RunConfiguration.Arguments">/home/arash/Dropbox/Chloeta/NHA/WS3_Site_Coordinates.csv /home/arash/Dropbox/Chloeta/NHA/out.csv --id-col &quot;Project No.&quot; --products landcover --buffer 500 --nlcd-year 2023 --download /home/arash/Dropbox/Chloeta/NHA/WS3_GIS</value>
      <value type="bool" key="RunConfiguration.UseCppDebuggerAuto">true</value>
      <value type="bool" key="RunConfiguration.UseLibrarySearchPath">true</value>
      <value type="bool" key="RunConfiguration.UseQmlDebuggerAuto">true</value>
@@ -279,7 +279,7 @@
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">Qt4ProjectManager.Qt4RunConfiguration:</value>
     <value type="QString" key="ProjectExplorer.RunConfiguration.BuildKey">/home/arash/Projects/DEMDownloader/demcheck.pro</value>
     <value type="bool" key="ProjectExplorer.RunConfiguration.Customized">true</value>
-    <value type="QString" key="RunConfiguration.Arguments">/home/arash/Dropbox/Chloeta/NHA/WS3_Site_Coordinates.csv /home/arash/Dropbox/Chloeta/NHA/out.csv --id-col &quot;Project No.&quot; --products roads --download ./data --buffer 5000</value>
+    <value type="QString" key="RunConfiguration.Arguments">/home/arash/Dropbox/Chloeta/NHA/WS3_Site_Coordinates.csv /home/arash/Dropbox/Chloeta/NHA/out.csv --id-col &quot;Project No.&quot; --products landcover --buffer 500 --nlcd-year 2023 --download /home/arash/Dropbox/Chloeta/NHA/WS3_GIS</value>
     <value type="bool" key="RunConfiguration.UseCppDebuggerAuto">true</value>
     <value type="bool" key="RunConfiguration.UseLibrarySearchPath">true</value>
     <value type="bool" key="RunConfiguration.UseQmlDebuggerAuto">true</value>

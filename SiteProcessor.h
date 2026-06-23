@@ -3,6 +3,7 @@
 #include "ProductType.h"
 #include "TnmClient.h"
 #include "TigerClient.h"
+#include "MrlcClient.h"
 #include <QString>
 #include <QList>
 #include <memory>
@@ -29,6 +30,7 @@ class SiteProcessor {
 public:
     SiteProcessor(TnmClient& client,
                   TigerClient& tiger,
+                  MrlcClient& mrlc,
                   QList<std::shared_ptr<ProductType>> products,
                   ProcessOptions opts);
 
@@ -39,6 +41,7 @@ public:
 private:
     TnmClient& m_client;
     TigerClient& m_tiger;
+    MrlcClient& m_mrlc;
     QList<std::shared_ptr<ProductType>> m_products;
     ProcessOptions m_opts;
 
@@ -55,6 +58,13 @@ private:
                                            double lat, double lon,
                                            const QString& siteId,
                                            QTextStream& log);
+
+    // Bbox-raster products (NLCD land cover) resolve + download via a single
+    // WCS GetCoverage clipped to the site's bounding box.
+    ProductOutcome resolveAndDownloadLandCover(const ProductType& product,
+                                               double lat, double lon,
+                                               const QString& siteId,
+                                               QTextStream& log);
 
     // Download the winning tiles for one product into <dir>/<siteId>/<key>/.
     void downloadOutcome(const ProductType& product, ProductOutcome& outcome,

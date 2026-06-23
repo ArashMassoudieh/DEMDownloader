@@ -11,6 +11,13 @@
 //
 // Adding a new USGS product (e.g. WBD watershed boundaries) means adding one
 // subclass here; nothing else in the program needs to change.
+// How a product is fetched. The processor routes on this.
+//   Tnm        - TNMAccess query-by-bbox, walk resolution tiers (DEM, hydro)
+//   County     - Census geocode -> county FIPS -> TIGER download (roads)
+//   BboxRaster - single OGC WCS GetCoverage clipped to a bbox (NLCD land cover;
+//                soils/HSG will join here next)
+enum class FetchVia { Tnm, County, BboxRaster };
+
 class ProductType {
 public:
     virtual ~ProductType() = default;
@@ -27,10 +34,13 @@ public:
     // large per-watershed package. This lets the processor log sensibly and
     // pick a default tile cap.
     virtual int defaultMaxTiles() const = 0;
-    // Most products are queried by bounding box through TNMAccess. A few
-    // (roads) are not available that way and are fetched per-county from
-    // Census TIGER/Line instead. The processor checks this to route them.
-    virtual bool isCountyBased() const { return false; }
+    // Most products are queried by bounding box through TNMAccess. A few are
+    // not: roads come per-county from Census TIGER/Line, and land cover comes
+    // as a single bbox-clipped WCS coverage. The processor routes on this.
+    virtual FetchVia fetchVia() const { return FetchVia::Tnm; }
+    // Backward-compatible shim: existing call sites and any external code that
+    // still asks isCountyBased() keep working, now derived from fetchVia().
+    bool isCountyBased() const { return fetchVia() == FetchVia::County; }
 };
 // 3DEP elevation, HIGH RESOLUTION: best available, 1 m -> 1/9 -> 1/3 -> 1 arc-sec.
 // Folder: <site>/demhr/   Use for HEC-RAS (fine terrain).
@@ -95,9 +105,31 @@ public:
     const QList<Tier>& tiers() const override { return m_tiers; }
     QString prodFormats() const override { return "Shapefile"; }
     int defaultMaxTiles() const override { return 1; }   // one county package
-    bool isCountyBased() const override { return true; }
+    FetchVia fetchVia() const override { return FetchVia::County; }
 private:
     QList<Tier> m_tiers = {
         {"All Roads", "Census TIGER/Line All Roads (county)"}
+    };
+};
+
+// Land cover: NLCD (Annual NLCD, Collection 1) from the USGS/MRLC GeoServer
+// WCS. Not a TNM product and not county-based: a single national coverage that
+// the server clips to a bounding box and returns as a GeoTIFF. fetchVia()
+// returns BboxRaster, so SiteProcessor routes it to MrlcClient (one
+// GetCoverage -> one clipped .tif). The tiers() list is unused for bbox-raster
+// products but kept non-empty to satisfy the interface; bestResolution is
+// reported as the fixed 30 m NLCD grid.
+// Folder: <site>/landcover/
+class LandCoverProduct : public ProductType {
+public:
+    QString key() const override { return "landcover"; }
+    QString label() const override { return "land cover (NLCD, MRLC WCS)"; }
+    const QList<Tier>& tiers() const override { return m_tiers; }
+    QString prodFormats() const override { return "GeoTIFF"; }
+    int defaultMaxTiles() const override { return 1; }   // one clipped raster
+    FetchVia fetchVia() const override { return FetchVia::BboxRaster; }
+private:
+    QList<Tier> m_tiers = {
+        {"30 m", "NLCD Annual Land Cover (CONUS), 30 m"}
     };
 };
