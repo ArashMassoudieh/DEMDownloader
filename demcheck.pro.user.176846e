@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE QtCreatorProject>
-<!-- Written by QtCreator 17.0.2, 2026-06-25T12:47:36. -->
+<!-- Written by QtCreator 17.0.1, 2026-06-21T09:21:41. -->
 <qtcreator>
  <data>
   <variable>EnvironmentId</variable>
-  <value type="QByteArray">{da1df9a0-550b-4af4-ad19-7511f1953b8e}</value>
+  <value type="QByteArray">{176846ea-cd45-48fe-948d-8f150badbf46}</value>
  </data>
  <data>
   <variable>ProjectExplorer.Project.ActiveTarget</variable>
@@ -79,7 +79,7 @@
     <value type="bool" key="ClangTools.AnalyzeOpenFiles">true</value>
     <value type="bool" key="ClangTools.BuildBeforeAnalysis">true</value>
     <value type="QString" key="ClangTools.DiagnosticConfig">Builtin.DefaultTidyAndClazy</value>
-    <value type="int" key="ClangTools.ParallelJobs">8</value>
+    <value type="int" key="ClangTools.ParallelJobs">16</value>
     <value type="bool" key="ClangTools.PreferConfigFile">true</value>
     <valuelist type="QVariantList" key="ClangTools.SelectedDirs"/>
     <valuelist type="QVariantList" key="ClangTools.SelectedFiles"/>
@@ -93,16 +93,16 @@
   <valuemap type="QVariantMap">
    <value type="QString" key="DeviceType">Desktop</value>
    <value type="bool" key="HasPerBcDcs">true</value>
-   <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName">Desktop Qt 6.8.3</value>
-   <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName">Desktop Qt 6.8.3</value>
-   <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">qt.qt6.683.linux_gcc_64_kit</value>
-   <value type="qlonglong" key="ProjectExplorer.Target.ActiveBuildConfiguration">0</value>
+   <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName">Desktop Qt 6.8.2</value>
+   <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName">Desktop Qt 6.8.2</value>
+   <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">qt.qt6.682.linux_gcc_64_kit</value>
+   <value type="qlonglong" key="ProjectExplorer.Target.ActiveBuildConfiguration">1</value>
    <value type="qlonglong" key="ProjectExplorer.Target.ActiveDeployConfiguration">0</value>
    <value type="qlonglong" key="ProjectExplorer.Target.ActiveRunConfiguration">0</value>
    <valuemap type="QVariantMap" key="ProjectExplorer.Target.BuildConfiguration.0">
     <value type="int" key="EnableQmlDebugging">0</value>
-    <value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory">/home/arash/Projects/DEMDownloader/build/Desktop_Qt_6_8_3-Debug</value>
-    <value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory.shadowDir">/home/arash/Projects/DEMDownloader/build/Desktop_Qt_6_8_3-Debug</value>
+    <value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory">/home/arash/Projects/DEMDownloader/build/Desktop_Qt_6_8_2-Debug</value>
+    <value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory.shadowDir">/home/arash/Projects/DEMDownloader/build/Desktop_Qt_6_8_2-Debug</value>
     <valuemap type="QVariantMap" key="ProjectExplorer.BuildConfiguration.BuildStepList.0">
      <valuemap type="QVariantMap" key="ProjectExplorer.BuildStepList.Step.0">
       <value type="bool" key="ProjectExplorer.BuildStep.Enabled">true</value>
@@ -166,23 +166,18 @@
      <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">Qt4ProjectManager.Qt4RunConfiguration:</value>
      <value type="QString" key="ProjectExplorer.RunConfiguration.BuildKey">/home/arash/Projects/DEMDownloader/demcheck.pro</value>
      <value type="bool" key="ProjectExplorer.RunConfiguration.Customized">true</value>
-     <value type="QString" key="RunConfiguration.Arguments">/home/arash/Dropbox/Chloeta/NHA/WS3_GIS/ws3_site_locations.csv \
-  /home/arash/Dropbox/Chloeta/NHA/WS3_GIS/ws3_dem_hydro_check.csv \
-  --id-col project_no \
-  --products all \
-  --download /home/arash/Dropbox/Chloeta/NHA/WS3_GIS \
-  --buffer 500</value>
+     <value type="QString" key="RunConfiguration.Arguments">/home/arash/Dropbox/Chloeta/NHA/WS3_Site_Coordinates.csv /home/arash/Dropbox/Chloeta/NHA/WS3_Site_Coordinates_results.csv --id-col &quot;Project No.&quot; --products all --make-points --download /home/arash/Dropbox/Chloeta/NHA/WS3_GIS --buffer 500</value>
      <value type="bool" key="RunConfiguration.UseCppDebuggerAuto">true</value>
      <value type="bool" key="RunConfiguration.UseLibrarySearchPath">true</value>
      <value type="bool" key="RunConfiguration.UseQmlDebuggerAuto">true</value>
-     <value type="QString" key="RunConfiguration.WorkingDirectory.default">/home/arash/Projects/DEMDownloader/build/Desktop_Qt_6_8_3-Debug</value>
+     <value type="QString" key="RunConfiguration.WorkingDirectory.default">/home/arash/Projects/DEMDownloader/build/Desktop_Qt_6_8_2-Debug</value>
     </valuemap>
     <value type="qlonglong" key="ProjectExplorer.Target.RunConfigurationCount">1</value>
     <value type="int" key="Qt4ProjectManager.Qt4BuildConfiguration.BuildConfiguration">2</value>
    </valuemap>
    <valuemap type="QVariantMap" key="ProjectExplorer.Target.BuildConfiguration.1">
-    <value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory">/home/arash/Projects/DEMDownloader/build/Desktop_Qt_6_8_3-Release</value>
-    <value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory.shadowDir">/home/arash/Projects/DEMDownloader/build/Desktop_Qt_6_8_3-Release</value>
+    <value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory">/home/arash/Projects/DEMDownloader/build/Desktop_Qt_6_8_2-Release</value>
+    <value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory.shadowDir">/home/arash/Projects/DEMDownloader/build/Desktop_Qt_6_8_2-Release</value>
     <valuemap type="QVariantMap" key="ProjectExplorer.BuildConfiguration.BuildStepList.0">
      <valuemap type="QVariantMap" key="ProjectExplorer.BuildStepList.Step.0">
       <value type="bool" key="ProjectExplorer.BuildStep.Enabled">true</value>
@@ -218,7 +213,7 @@
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName">Release</value>
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">Qt4ProjectManager.Qt4BuildConfiguration</value>
     <value type="qlonglong" key="ProjectExplorer.Target.ActiveDeployConfiguration">0</value>
-    <value type="qlonglong" key="ProjectExplorer.Target.ActiveRunConfiguration">-1</value>
+    <value type="qlonglong" key="ProjectExplorer.Target.ActiveRunConfiguration">0</value>
     <valuemap type="QVariantMap" key="ProjectExplorer.Target.DeployConfiguration.0">
      <valuemap type="QVariantMap" key="ProjectExplorer.BuildConfiguration.BuildStepList.0">
       <value type="qlonglong" key="ProjectExplorer.BuildStepList.StepsCount">0</value>
@@ -232,7 +227,27 @@
      <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">ProjectExplorer.DefaultDeployConfiguration</value>
     </valuemap>
     <value type="qlonglong" key="ProjectExplorer.Target.DeployConfigurationCount">1</value>
-    <value type="qlonglong" key="ProjectExplorer.Target.RunConfigurationCount">0</value>
+    <valuemap type="QVariantMap" key="ProjectExplorer.Target.RunConfiguration.0">
+     <value type="bool" key="Analyzer.Perf.Settings.UseGlobalSettings">true</value>
+     <value type="bool" key="Analyzer.QmlProfiler.Settings.UseGlobalSettings">true</value>
+     <value type="int" key="Analyzer.Valgrind.Callgrind.CostFormat">0</value>
+     <value type="bool" key="Analyzer.Valgrind.Settings.UseGlobalSettings">true</value>
+     <valuelist type="QVariantList" key="CustomOutputParsers"/>
+     <value type="int" key="PE.EnvironmentAspect.Base">2</value>
+     <valuelist type="QVariantList" key="PE.EnvironmentAspect.Changes"/>
+     <value type="bool" key="PE.EnvironmentAspect.PrintOnRun">false</value>
+     <value type="QString" key="PerfRecordArgsId">-e cpu-cycles --call-graph dwarf,4096 -F 250</value>
+     <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName"></value>
+     <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">Qt4ProjectManager.Qt4RunConfiguration:</value>
+     <value type="QString" key="ProjectExplorer.RunConfiguration.BuildKey">/home/arash/Projects/DEMDownloader/demcheck.pro</value>
+     <value type="bool" key="ProjectExplorer.RunConfiguration.Customized">true</value>
+     <value type="QString" key="RunConfiguration.Arguments">/home/arash/Dropbox/Chloeta/NHA/WS3_Site_Coordinates.csv /home/arash/Dropbox/Chloeta/NHA/out.csv --id-col &quot;Project No.&quot; --products landcover --buffer 500 --nlcd-year 2023 --download /home/arash/Dropbox/Chloeta/NHA/WS3_GIS</value>
+     <value type="bool" key="RunConfiguration.UseCppDebuggerAuto">true</value>
+     <value type="bool" key="RunConfiguration.UseLibrarySearchPath">true</value>
+     <value type="bool" key="RunConfiguration.UseQmlDebuggerAuto">true</value>
+     <value type="QString" key="RunConfiguration.WorkingDirectory.default">/home/arash/Projects/DEMDownloader/build/Desktop_Qt_6_8_2-Release</value>
+    </valuemap>
+    <value type="qlonglong" key="ProjectExplorer.Target.RunConfigurationCount">1</value>
     <value type="int" key="Qt4ProjectManager.Qt4BuildConfiguration.BuildConfiguration">0</value>
     <value type="int" key="QtQuickCompiler">0</value>
    </valuemap>
@@ -264,16 +279,11 @@
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">Qt4ProjectManager.Qt4RunConfiguration:</value>
     <value type="QString" key="ProjectExplorer.RunConfiguration.BuildKey">/home/arash/Projects/DEMDownloader/demcheck.pro</value>
     <value type="bool" key="ProjectExplorer.RunConfiguration.Customized">true</value>
-    <value type="QString" key="RunConfiguration.Arguments">/home/arash/Dropbox/Chloeta/NHA/WS3_GIS/ws3_site_locations.csv \
-  /home/arash/Dropbox/Chloeta/NHA/WS3_GIS/ws3_dem_hydro_check.csv \
-  --id-col project_no \
-  --products all \
-  --download /home/arash/Dropbox/Chloeta/NHA/WS3_GIS \
-  --buffer 500</value>
+    <value type="QString" key="RunConfiguration.Arguments">/home/arash/Dropbox/Chloeta/NHA/WS3_Site_Coordinates.csv /home/arash/Dropbox/Chloeta/NHA/out.csv --id-col &quot;Project No.&quot; --products landcover --buffer 500 --nlcd-year 2023 --download /home/arash/Dropbox/Chloeta/NHA/WS3_GIS</value>
     <value type="bool" key="RunConfiguration.UseCppDebuggerAuto">true</value>
     <value type="bool" key="RunConfiguration.UseLibrarySearchPath">true</value>
     <value type="bool" key="RunConfiguration.UseQmlDebuggerAuto">true</value>
-    <value type="QString" key="RunConfiguration.WorkingDirectory.default">/home/arash/Projects/DEMDownloader/build/Desktop_Qt_6_8_3-Debug</value>
+    <value type="QString" key="RunConfiguration.WorkingDirectory.default">/home/arash/Projects/DEMDownloader/build/Desktop_Qt_6_8_2-Release</value>
    </valuemap>
    <value type="qlonglong" key="ProjectExplorer.Target.RunConfigurationCount">1</value>
   </valuemap>

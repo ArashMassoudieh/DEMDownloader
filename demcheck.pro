@@ -9,6 +9,7 @@ INCLUDEPATH += src
 SOURCES += main.cpp \
     TigerClient.cpp \
     MrlcClient.cpp \
+    Atlas14Client.cpp \
     TnmClient.cpp \
     CsvTable.cpp \
     SiteProcessor.cpp \
@@ -17,6 +18,7 @@ SOURCES += main.cpp \
 HEADERS += \
     TigerClient.h \
     MrlcClient.h \
+    Atlas14Client.h \
     Types.h \
     ProductType.h \
     TnmClient.h \
