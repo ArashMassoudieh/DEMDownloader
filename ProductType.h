@@ -38,6 +38,11 @@ public:
     // not: roads come per-county from Census TIGER/Line, and land cover comes
     // as a single bbox-clipped WCS coverage. The processor routes on this.
     virtual FetchVia fetchVia() const { return FetchVia::Tnm; }
+    // Minimum query half-width (m). Lets a product widen the bbox beyond the
+    // user's --buffer so it reaches across native tile seams near tile edges.
+    // 0 = use --buffer as-is.
+    virtual double minQueryBufferMeters() const { return 0.0; }
+
     // Backward-compatible shim: existing call sites and any external code that
     // still asks isCountyBased() keep working, now derived from fetchVia().
     bool isCountyBased() const { return fetchVia() == FetchVia::County; }
@@ -50,7 +55,7 @@ public:
     QString label() const override { return "elevation high-res (3DEP DEM)"; }
     const QList<Tier>& tiers() const override { return m_tiers; }
     QString prodFormats() const override { return "GeoTIFF"; }
-    int defaultMaxTiles() const override { return 8; }
+    int defaultMaxTiles() const override { return 4; }
 private:
     QList<Tier> m_tiers = {
         {"1 meter",        "Digital Elevation Model (DEM) 1 meter"},

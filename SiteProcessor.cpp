@@ -43,7 +43,9 @@ ProductOutcome SiteProcessor::resolveProduct(const ProductType& product,
     bool anyError = false, anyOk = false;
 
     for (const Tier& t : product.tiers()) {
-        QueryResult qr = m_client.query(lat, lon, m_opts.bufferMeters,
+        const double effBuffer = std::max(m_opts.bufferMeters,
+                                          product.minQueryBufferMeters());
+        QueryResult qr = m_client.query(lat, lon, effBuffer,
                                         t.dataset, product.prodFormats());
         if (!qr.ok) {
             anyError = true;
