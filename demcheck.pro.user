@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE QtCreatorProject>
-<!-- Written by QtCreator 17.0.2, 2026-06-25T12:47:36. -->
+<!-- Written by QtCreator 17.0.2, 2026-07-07T11:13:26. -->
 <qtcreator>
  <data>
   <variable>EnvironmentId</variable>
@@ -171,7 +171,7 @@
   --id-col project_no \
   --products all \
   --download /home/arash/Dropbox/Chloeta/NHA/WS3_GIS \
-  --buffer 500</value>
+  --buffer 500 --make-points</value>
      <value type="bool" key="RunConfiguration.UseCppDebuggerAuto">true</value>
      <value type="bool" key="RunConfiguration.UseLibrarySearchPath">true</value>
      <value type="bool" key="RunConfiguration.UseQmlDebuggerAuto">true</value>
@@ -269,7 +269,7 @@
   --id-col project_no \
   --products all \
   --download /home/arash/Dropbox/Chloeta/NHA/WS3_GIS \
-  --buffer 500</value>
+  --buffer 500 --make-points</value>
     <value type="bool" key="RunConfiguration.UseCppDebuggerAuto">true</value>
     <value type="bool" key="RunConfiguration.UseLibrarySearchPath">true</value>
     <value type="bool" key="RunConfiguration.UseQmlDebuggerAuto">true</value>

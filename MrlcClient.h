@@ -16,10 +16,13 @@ class QTextStream;
 //   https://dmsdata.cr.usgs.gov/geoserver/mrlc_Land-Cover-Native_conus_year_data/wcs
 //
 // This is the CONUS coverage (covers AZ and NM). It is time-enabled: Annual
-// NLCD publishes one layer per year, selected with a WCS time subset. The
-// coverage id and the exact time axis label are GeoServer specifics that can
-// drift, so both are constants near the top of MrlcClient.cpp and are easy to
-// correct after a one-line probe (see the curl in the .cpp header comment).
+// NLCD publishes one layer per year, selected with the WCS time parameter. The
+// coverage id is a GeoServer specific that can drift, so it is a constant near
+// the top of MrlcClient.cpp and is easy to correct after a one-line probe (see
+// the curl in the .cpp header comment).
+//
+// Requests use WCS 1.0.0, not 2.0.1: the server's 2.0.1 GetCoverage throws an
+// internal NPE on this coverage regardless of parameters. See MrlcClient.cpp.
 //
 // Synchronous (local event loop), matching TnmClient / TigerClient so the
 // caller can iterate sites in a simple loop.
@@ -28,8 +31,10 @@ public:
     // year selects the Annual NLCD epoch (e.g. 2023). timeout for the export.
     explicit MrlcClient(int year = 2023, int downloadTimeoutMs = 300000);
 
-    // Build the WCS GetCoverage URL for a bbox (WGS84 decimal degrees) around a
-    // point of half-width bufferMeters. Returns the full request URL.
+    // Build the WCS GetCoverage URL for a square box of half-width bufferMeters
+    // around a WGS84 point. The box is expressed in the coverage's native CRS
+    // (EPSG:5070 Albers) so the server returns the untouched 30 m NLCD grid.
+    // Returns the full request URL.
     QString coverageUrlForBbox(double lat, double lon, double bufferMeters) const;
 
     // Download the clipped GeoTIFF to destPath (streamed, .part rename,
@@ -46,9 +51,13 @@ private:
     int m_year;
     int m_downloadTimeoutMs;
 
-    // meters -> approx degrees, used to grow the bbox. Latitude is ~constant;
-    // longitude is scaled by cos(lat).
-    static void bboxDegrees(double lat, double lon, double bufferMeters,
-                            double* minLon, double* minLat,
-                            double* maxLon, double* maxLat);
+    // WGS84 lon/lat -> EPSG:5070 Albers Equal Area (CONUS) easting/northing.
+    // Snyder's forward formulas; the project links only Qt, so no PROJ.
+    static void lonLatToAlbers(double lon, double lat, double* x, double* y);
+
+    // Square box of half-width bufferMeters around the point, in Albers meters,
+    // snapped outward to the NLCD 30 m grid so no resampling is needed.
+    static void bboxAlbers(double lat, double lon, double bufferMeters,
+                           double* minX, double* minY,
+                           double* maxX, double* maxY);
 };

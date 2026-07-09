@@ -188,7 +188,7 @@ ProductOutcome SiteProcessor::resolveAndDownloadLandCover(const ProductType& pro
         out.downloaded = 1;
         log << "  -> 1 file in " << prodDir << "\n"; log.flush();
     } else {
-        out.status = "download failed (check coverage id / axis labels / year)";
+        out.status = "download failed (check coverage id / year availability)";
     }
     return out;
 }
